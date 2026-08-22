@@ -44,6 +44,48 @@ const contentSchema = new mongoose.Schema(
       fullText: { type: String, default: '' },
     },
 
+    // Module 5 — AI Quality Check
+    qualityReview: {
+      hookStrength: {
+        score: { type: Number, min: 0, max: 10, default: null },
+        issue: { type: String, default: '' },
+      },
+      specificity: {
+        score: { type: Number, min: 0, max: 10, default: null },
+        issue: { type: String, default: '' },
+      },
+      humanVoice: {
+        score: { type: Number, min: 0, max: 10, default: null },
+        issue: { type: String, default: '' },
+      },
+      credibility: {
+        score: { type: Number, min: 0, max: 10, default: null },
+        issue: { type: String, default: '' },
+      },
+      practicalValue: {
+        score: { type: Number, min: 0, max: 10, default: null },
+        issue: { type: String, default: '' },
+      },
+      readability: {
+        score: { type: Number, min: 0, max: 10, default: null },
+        issue: { type: String, default: '' },
+      },
+      promotionalRisk: {
+        score: { type: Number, min: 0, max: 10, default: null },
+        issue: { type: String, default: '' },
+      },
+      overall: {
+        type: Number,
+        min: 0,
+        max: 10,
+        default: null,
+      },
+      autoImproved: {
+        type: Boolean,
+        default: false,
+      },
+    },
+
     status: {
       type: String,
       enum: ['draft', 'angles_generated', 'hooks_generated', 'hook_selected', 'content_generated', 'published', 'archived'],

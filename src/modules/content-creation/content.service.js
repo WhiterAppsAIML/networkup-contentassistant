@@ -3,6 +3,7 @@ const Hook = require('../../models/Hook.model');
 const AppError = require('../../utils/AppError');
 const { generateJSON } = require('../../ai/ai.service');
 const { buildContentPrompt } = require('../../ai/prompts/content.prompt');
+const { checkContentQuality } = require('../ai-quality-check/quality-check.service');
 
 async function createDraft(userId, payload) {
   return Content.create({ userId, ...payload, status: 'draft' });
@@ -14,8 +15,8 @@ async function getDraftOrThrow(contentId, userId) {
   return content;
 }
 
-// Module 4 — structural pass only. Quality Check (Module 5) and Improve
-// actions (Module 6) are not built yet; this returns the raw generation.
+// Module 4 — Content Generation.
+// Module 5 — AI Quality Check runs automatically after content generation.
 async function generateContent(contentId, userId) {
   const content = await getDraftOrThrow(contentId, userId);
 
@@ -58,7 +59,25 @@ async function generateContent(contentId, userId) {
     cta: result.cta || '',
     fullText: result.fullText || '',
   };
+
   content.status = 'content_generated';
+
+  await content.save();
+
+  const qualityResult = await checkContentQuality(content._id, userId);
+
+  content.qualityReview = {
+    hookStrength: qualityResult.scores.hookStrength,
+    specificity: qualityResult.scores.specificity,
+    humanVoice: qualityResult.scores.humanVoice,
+    credibility: qualityResult.scores.credibility,
+    practicalValue: qualityResult.scores.practicalValue,
+    readability: qualityResult.scores.readability,
+    promotionalRisk: qualityResult.scores.promotionalRisk,
+    overall: qualityResult.overall,
+    autoImproved: false,
+  };
+
   await content.save();
 
   hook.performance.timesUsed += 1;
