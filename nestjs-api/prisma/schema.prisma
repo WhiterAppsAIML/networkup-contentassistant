@@ -1,0 +1,212 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+enum ContentStatus {
+  DRAFT
+  ANGLES_GENERATED
+  HOOKS_GENERATED
+  HOOK_SELECTED
+  CONTENT_GENERATED
+  IMPROVED
+  PUBLISHED
+  ARCHIVED
+}
+
+enum HookCategory {
+  CURIOSITY
+  CONTRARIAN
+  STORY
+  QUESTION
+}
+
+enum LMStatus {
+  DRAFT
+  GENERATED
+}
+
+enum ScheduleStatus {
+  SCHEDULED
+  POSTED
+  CANCELLED
+  FAILED
+}
+
+enum UserTier {
+  FREE
+  PRO
+  ENTERPRISE
+}
+
+model User {
+  id            String    @id @default(uuid())
+  email         String    @unique
+  passwordHash  String
+  tier          UserTier  @default(FREE)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  contents      Content[]
+  hooks         Hook[]
+  leadMagnets   LeadMagnet[]
+  frameworks    Framework[]
+  ctas          CTA[]
+  scheduledPosts ScheduledPost[]
+  ragDocuments  RagDocument[]
+}
+
+model Content {
+  id              BigInt       @id @default(autoincrement())
+  userId          String
+  user            User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  contentGoal     String
+  postType        String
+  topic           String
+  audience        String
+  experienceNotes String       @db.Text
+  tone            String
+  cta             String
+  selectedAngleId BigInt?
+  selectedHookId  BigInt?
+  status          ContentStatus @default(DRAFT)
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  angles          ContentAngle[]
+  improvements    ContentImprovement[]
+  generated       ContentGenerated?
+  hooks           Hook[]
+  scheduledPosts  ScheduledPost[]
+
+  @@index([userId, status])
+  @@index([userId, createdAt])
+}
+
+model ContentAngle {
+  id        BigInt  @id @default(autoincrement())
+  contentId BigInt
+  content   Content @relation(fields: [contentId], references: [id], onDelete: Cascade)
+  type      String
+  label     String
+  text      String  @db.Text
+  sortOrder Int
+}
+
+model ContentImprovement {
+  id        BigInt   @id @default(autoincrement())
+  contentId BigInt
+  content   Content  @relation(fields: [contentId], references: [id], onDelete: Cascade)
+  action    String
+  appliedAt DateTime @default(now())
+}
+
+model ContentGenerated {
+  contentId BigInt  @id
+  content   Content @relation(fields: [contentId], references: [id], onDelete: Cascade)
+  hook      String? @db.Text
+  problem   String? @db.Text
+  experience String? @db.Text
+  insight   String? @db.Text
+  takeaway  String? @db.Text
+  cta       String?
+  fullText  String? @db.Text
+}
+
+model Hook {
+  id              BigInt      @id @default(autoincrement())
+  contentId       BigInt
+  userId          String
+  user            User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  content         Content     @relation(fields: [contentId], references: [id], onDelete: Cascade)
+  category        HookCategory
+  text            String      @db.Text
+  timesUsed       Int         @default(0)
+  avgEngagement   Float?
+  createdAt       DateTime    @default(now())
+
+  @@index([userId, timesUsed])
+  @@index([contentId])
+}
+
+model LeadMagnet {
+  id                  BigInt   @id @default(autoincrement())
+  userId              String
+  user                User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  audience            String
+  problem             String
+  outcome             String
+  assetType           String
+  ctaGoal             String
+  topic               String
+  title               String?
+  outline             Json
+  landingPageCopy     String?   @db.Text
+  emailSequence       Json
+  linkedinPromoPost   String?   @db.Text
+  cta                 String?
+  status              LMStatus  @default(DRAFT)
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  @@index([userId, createdAt])
+}
+
+model Framework {
+  id          BigInt  @id @default(autoincrement())
+  userId      String
+  user        User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name        String
+  structure   Json
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  @@index([userId])
+}
+
+model CTA {
+  id              BigInt  @id @default(autoincrement())
+  userId          String
+  user            User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  text            String
+  type            String  @default("custom")
+  timesUsed       Int     @default(0)
+  avgEngagement   Float?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  @@index([userId])
+}
+
+model ScheduledPost {
+  id            BigInt         @id @default(autoincrement())
+  contentId     BigInt
+  content       Content        @relation(fields: [contentId], references: [id], onDelete: Cascade)
+  userId        String
+  user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  scheduledFor  DateTime
+  status        ScheduleStatus @default(SCHEDULED)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  @@index([userId, status])
+  @@index([scheduledFor])
+}
+
+model RagDocument {
+  id          BigInt   @id @default(autoincrement())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  sourceId    String
+  sourceType  String
+  title       String
+  chunkIndex  Int      @default(0)
+  text        String   @db.Text
+  metadata    Json?
+  createdAt   DateTime @default(now())
+  @@index([userId, sourceId])
+  @@index([sourceId])
+}
