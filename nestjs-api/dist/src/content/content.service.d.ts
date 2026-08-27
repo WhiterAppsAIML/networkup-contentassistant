@@ -22,6 +22,10 @@ export declare class ContentService {
         tone: string;
         selectedAngleId: bigint | null;
         selectedHookId: bigint | null;
+        qualityScores: import("@prisma/client/runtime/library").JsonValue | null;
+        qualityOverall: number | null;
+        qualityWeakDimensions: import("@prisma/client/runtime/library").JsonValue | null;
+        qualityCheckedAt: Date | null;
     }>;
     getDraftOrThrow(contentId: string, userId: string): Promise<{
         angles: {
@@ -67,6 +71,10 @@ export declare class ContentService {
         tone: string;
         selectedAngleId: bigint | null;
         selectedHookId: bigint | null;
+        qualityScores: import("@prisma/client/runtime/library").JsonValue | null;
+        qualityOverall: number | null;
+        qualityWeakDimensions: import("@prisma/client/runtime/library").JsonValue | null;
+        qualityCheckedAt: Date | null;
     }>;
     listContent(userId: string, query: ContentQueryDto): Promise<{
         items: ({
@@ -105,6 +113,10 @@ export declare class ContentService {
             tone: string;
             selectedAngleId: bigint | null;
             selectedHookId: bigint | null;
+            qualityScores: import("@prisma/client/runtime/library").JsonValue | null;
+            qualityOverall: number | null;
+            qualityWeakDimensions: import("@prisma/client/runtime/library").JsonValue | null;
+            qualityCheckedAt: Date | null;
         })[];
         pagination: {
             page: number;
@@ -157,6 +169,10 @@ export declare class ContentService {
         tone: string;
         selectedAngleId: bigint | null;
         selectedHookId: bigint | null;
+        qualityScores: import("@prisma/client/runtime/library").JsonValue | null;
+        qualityOverall: number | null;
+        qualityWeakDimensions: import("@prisma/client/runtime/library").JsonValue | null;
+        qualityCheckedAt: Date | null;
     }>;
     selectAngle(contentId: string, userId: string, dto: SelectAngleDto): Promise<{
         angles: {
@@ -202,6 +218,10 @@ export declare class ContentService {
         tone: string;
         selectedAngleId: bigint | null;
         selectedHookId: bigint | null;
+        qualityScores: import("@prisma/client/runtime/library").JsonValue | null;
+        qualityOverall: number | null;
+        qualityWeakDimensions: import("@prisma/client/runtime/library").JsonValue | null;
+        qualityCheckedAt: Date | null;
     }>;
     generateHooks(contentId: string, userId: string): Promise<{
         angles: {
@@ -247,6 +267,10 @@ export declare class ContentService {
         tone: string;
         selectedAngleId: bigint | null;
         selectedHookId: bigint | null;
+        qualityScores: import("@prisma/client/runtime/library").JsonValue | null;
+        qualityOverall: number | null;
+        qualityWeakDimensions: import("@prisma/client/runtime/library").JsonValue | null;
+        qualityCheckedAt: Date | null;
     }>;
     selectHook(contentId: string, userId: string, dto: SelectHookDto): Promise<{
         angles: {
@@ -292,6 +316,10 @@ export declare class ContentService {
         tone: string;
         selectedAngleId: bigint | null;
         selectedHookId: bigint | null;
+        qualityScores: import("@prisma/client/runtime/library").JsonValue | null;
+        qualityOverall: number | null;
+        qualityWeakDimensions: import("@prisma/client/runtime/library").JsonValue | null;
+        qualityCheckedAt: Date | null;
     }>;
     generateContent(contentId: string, userId: string): Promise<{
         angles: {
@@ -337,6 +365,10 @@ export declare class ContentService {
         tone: string;
         selectedAngleId: bigint | null;
         selectedHookId: bigint | null;
+        qualityScores: import("@prisma/client/runtime/library").JsonValue | null;
+        qualityOverall: number | null;
+        qualityWeakDimensions: import("@prisma/client/runtime/library").JsonValue | null;
+        qualityCheckedAt: Date | null;
     }>;
     improveContent(contentId: string, userId: string, dto: ImproveContentDto): Promise<{
         angles: {
@@ -382,6 +414,10 @@ export declare class ContentService {
         tone: string;
         selectedAngleId: bigint | null;
         selectedHookId: bigint | null;
+        qualityScores: import("@prisma/client/runtime/library").JsonValue | null;
+        qualityOverall: number | null;
+        qualityWeakDimensions: import("@prisma/client/runtime/library").JsonValue | null;
+        qualityCheckedAt: Date | null;
     }>;
     archiveContent(contentId: string, userId: string): Promise<{
         userId: string;
@@ -398,6 +434,10 @@ export declare class ContentService {
         tone: string;
         selectedAngleId: bigint | null;
         selectedHookId: bigint | null;
+        qualityScores: import("@prisma/client/runtime/library").JsonValue | null;
+        qualityOverall: number | null;
+        qualityWeakDimensions: import("@prisma/client/runtime/library").JsonValue | null;
+        qualityCheckedAt: Date | null;
     }>;
     deleteContent(contentId: string, userId: string): Promise<{
         message: string;

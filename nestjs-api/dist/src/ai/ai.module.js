@@ -12,6 +12,7 @@ const config_1 = require("@nestjs/config");
 const gemini_service_1 = require("./gemini.service");
 const embedding_service_1 = require("./embedding.service");
 const prompt_builder_service_1 = require("./prompt-builder.service");
+const quality_check_prompt_service_1 = require("./quality-check-prompt.service");
 let AiModule = class AiModule {
 };
 exports.AiModule = AiModule;
@@ -19,8 +20,8 @@ exports.AiModule = AiModule = __decorate([
     (0, common_1.Global)(),
     (0, common_1.Module)({
         imports: [config_1.ConfigModule],
-        providers: [gemini_service_1.GeminiService, embedding_service_1.EmbeddingService, prompt_builder_service_1.PromptBuilderService],
-        exports: [gemini_service_1.GeminiService, embedding_service_1.EmbeddingService, prompt_builder_service_1.PromptBuilderService],
+        providers: [gemini_service_1.GeminiService, embedding_service_1.EmbeddingService, prompt_builder_service_1.PromptBuilderService, quality_check_prompt_service_1.QualityCheckPromptService],
+        exports: [gemini_service_1.GeminiService, embedding_service_1.EmbeddingService, prompt_builder_service_1.PromptBuilderService, quality_check_prompt_service_1.QualityCheckPromptService],
     })
 ], AiModule);
 //# sourceMappingURL=ai.module.js.map

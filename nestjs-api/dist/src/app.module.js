@@ -23,6 +23,7 @@ const schedule_module_1 = require("./schedule/schedule.module");
 const framework_module_1 = require("./framework/framework.module");
 const cta_module_1 = require("./cta/cta.module");
 const rag_module_1 = require("./rag/rag.module");
+const quality_check_module_1 = require("./quality-check/quality-check.module");
 const tier_rate_limit_guard_1 = require("./common/guards/tier-rate-limit.guard");
 const jwt_auth_guard_1 = require("./auth/guards/jwt-auth.guard");
 let AppModule = class AppModule {
@@ -56,6 +57,7 @@ exports.AppModule = AppModule = __decorate([
             framework_module_1.FrameworkModule,
             cta_module_1.CtaModule,
             rag_module_1.RagModule,
+            quality_check_module_1.QualityCheckModule,
         ],
         providers: [
             {

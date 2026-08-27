@@ -30,6 +30,10 @@ export declare class LibraryService {
             tone: string;
             selectedAngleId: bigint | null;
             selectedHookId: bigint | null;
+            qualityScores: import("@prisma/client/runtime/library").JsonValue | null;
+            qualityOverall: number | null;
+            qualityWeakDimensions: import("@prisma/client/runtime/library").JsonValue | null;
+            qualityCheckedAt: Date | null;
         })[];
         pagination: {
             page: number;
@@ -53,6 +57,10 @@ export declare class LibraryService {
         tone: string;
         selectedAngleId: bigint | null;
         selectedHookId: bigint | null;
+        qualityScores: import("@prisma/client/runtime/library").JsonValue | null;
+        qualityOverall: number | null;
+        qualityWeakDimensions: import("@prisma/client/runtime/library").JsonValue | null;
+        qualityCheckedAt: Date | null;
     }>;
     deleteContent(contentId: string, userId: string): Promise<{
         message: string;

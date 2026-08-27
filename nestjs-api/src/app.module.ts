@@ -15,6 +15,7 @@ import { ScheduleModule } from './schedule/schedule.module';
 import { FrameworkModule } from './framework/framework.module';
 import { CtaModule } from './cta/cta.module';
 import { RagModule } from './rag/rag.module';
+import { QualityCheckModule } from './quality-check/quality-check.module';
 
 import { TierRateLimitGuard } from './common/guards/tier-rate-limit.guard';
 import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
@@ -46,6 +47,7 @@ import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
     FrameworkModule,
     CtaModule,
     RagModule,
+    QualityCheckModule,
   ],
   providers: [
     {

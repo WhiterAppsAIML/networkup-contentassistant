@@ -78,6 +78,12 @@ model Content {
   createdAt       DateTime     @default(now())
   updatedAt       DateTime     @updatedAt
 
+  // Module 5 - Quality Check
+  qualityScores   Json?
+  qualityOverall  Float?
+  qualityWeakDimensions Json?
+  qualityCheckedAt DateTime?
+
   angles          ContentAngle[]
   improvements    ContentImprovement[]
   generated       ContentGenerated?
