@@ -1,5 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { UserTier } from '../common/decorators/require-tier.decorator';
 
 @Injectable()
 export class UserService {
@@ -8,7 +9,7 @@ export class UserService {
   async getProfile(userId: string) {
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
-      select: { id: true, email: true, tier: true, createdAt: true },
+      select: { id: true, email: true, tier: true, createdAt: true, firebaseUid: true },
     });
     if (!user) throw new NotFoundException('User not found');
     return user;
@@ -36,10 +37,10 @@ export class UserService {
     };
   }
 
-  async upgradeTier(userId: string, tier: 'PRO' | 'ENTERPRISE') {
+  async upgradeTier(userId: string, tier: 'GROWTH' | 'ENTERPRISE') {
     const user = await this.prisma.user.update({
       where: { id: userId },
-      data: { tier },
+      data: { tier: tier as UserTier },
       select: { id: true, email: true, tier: true },
     });
     return user;

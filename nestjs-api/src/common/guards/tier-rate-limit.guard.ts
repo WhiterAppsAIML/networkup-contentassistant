@@ -1,23 +1,43 @@
-import { Injectable, CanActivate, ExecutionContext, ForbiddenException, Inject } from '@nestjs/common';
+import { Injectable, CanActivate, ExecutionContext, ForbiddenException } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { Request } from 'express';
-import { PrismaService } from '../../prisma/prisma.service';
+import { RedisService } from '../../redis/redis.service';
 import { RequireTier, UserTier } from '../../common/decorators/require-tier.decorator';
 import { Public } from '../../common/decorators/public.decorator';
 
+interface AuthenticatedRequest {
+  user: { id: string; tier: UserTier; firebaseUid: string; email: string } | undefined;
+}
+
 const TIER_LIMITS = {
-  [UserTier.FREE]: { rpm: 30, rpd: 1000, concurrent: 2 },
-  [UserTier.PRO]: { rpm: 120, rpd: 10000, concurrent: 10 },
+  [UserTier.STARTER]: { rpm: 30, rpd: 1000, concurrent: 2 },
+  [UserTier.GROWTH]: { rpm: 120, rpd: 10000, concurrent: 10 },
   [UserTier.ENTERPRISE]: { rpm: 600, rpd: 100000, concurrent: 50 },
 };
 
-const TIER_ORDER = [UserTier.FREE, UserTier.PRO, UserTier.ENTERPRISE];
+const TIER_ORDER = [UserTier.STARTER, UserTier.GROWTH, UserTier.ENTERPRISE];
+
+const RATE_LIMIT_SCRIPT = `
+local key = KEYS[1]
+local limit = tonumber(ARGV[1])
+local window = tonumber(ARGV[2])
+local now = tonumber(ARGV[3])
+local start = now - window
+
+redis.call('ZREMRANGEBYSCORE', key, 0, start)
+local count = redis.call('ZCARD', key)
+if count >= limit then
+  return 0
+end
+redis.call('ZADD', key, now, now .. '-' .. math.random())
+redis.call('EXPIRE', key, window + 1)
+return 1
+`;
 
 @Injectable()
 export class TierRateLimitGuard implements CanActivate {
   constructor(
     private reflector: Reflector,
-    private prisma: PrismaService,
+    private redis: RedisService,
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -32,8 +52,8 @@ export class TierRateLimitGuard implements CanActivate {
       context.getClass(),
     ]);
 
-    const request = context.switchToHttp().getRequest<Request>();
-    const user = request.user as { id: string; tier: UserTier } | undefined;
+    const request = context.switchToHttp().getRequest<AuthenticatedRequest>();
+    const user = request.user;
 
     if (!user) {
       throw new ForbiddenException('Authentication required');
@@ -47,8 +67,6 @@ export class TierRateLimitGuard implements CanActivate {
       }
     }
 
-    // Simple in-memory rate limiting for now
-    // In production, use Redis
     const limits = TIER_LIMITS[user.tier];
     const allowed = await this.checkRateLimit(user.id, limits);
 
@@ -60,8 +78,32 @@ export class TierRateLimitGuard implements CanActivate {
   }
 
   private async checkRateLimit(userId: string, limits: { rpm: number; rpd: number; concurrent: number }): Promise<boolean> {
-    // For now, just return true - implement Redis-based rate limiting in production
-    // This is a placeholder to avoid build errors
-    return true;
+    const now = Date.now();
+    const rpmKey = `ratelimit:rpm:${userId}`;
+    const rpdKey = `ratelimit:rpd:${userId}`;
+
+    const rpmAllowed = await this.redis.getClient().eval(
+      RATE_LIMIT_SCRIPT,
+      1,
+      rpmKey,
+      limits.rpm.toString(),
+      '60000',
+      now.toString(),
+    );
+
+    if (!rpmAllowed) {
+      return false;
+    }
+
+    const rpdAllowed = await this.redis.getClient().eval(
+      RATE_LIMIT_SCRIPT,
+      1,
+      rpdKey,
+      limits.rpd.toString(),
+      '86400000',
+      now.toString(),
+    );
+
+    return !!rpdAllowed;
   }
 }

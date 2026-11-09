@@ -1,3 +1,7 @@
 node_modules/
 .env
 *.log
+BACKEND_STATUS_REPORT.md
+BACKEND_TEAM_REQUIREMENTS.md
+# Build output
+dist/

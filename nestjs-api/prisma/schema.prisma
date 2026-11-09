@@ -38,16 +38,16 @@ enum ScheduleStatus {
 }
 
 enum UserTier {
-  FREE
-  PRO
+  STARTER
+  GROWTH
   ENTERPRISE
 }
 
 model User {
   id            String    @id @default(uuid())
   email         String    @unique
-  passwordHash  String
-  tier          UserTier  @default(FREE)
+  firebaseUid   String    @unique
+  tier          UserTier  @default(STARTER)
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 

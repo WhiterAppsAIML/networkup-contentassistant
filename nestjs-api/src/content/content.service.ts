@@ -2,6 +2,7 @@ import { Injectable, NotFoundException, BadRequestException, ForbiddenException 
 import { PrismaService } from '../prisma/prisma.service';
 import { GeminiService } from '../ai/gemini.service';
 import { PromptBuilderService, AnglePromptInput, HookPromptInput, ContentPromptInput, ImprovePromptInput } from '../ai/prompt-builder.service';
+import { QualityCheckService } from '../quality-check/quality-check.service';
 import { CreateContentDto, SelectAngleDto, SelectHookDto, ImproveContentDto, ContentQueryDto } from './dto/content.dto';
 
 const IMPROVABLE_STATUSES = ['CONTENT_GENERATED', 'IMPROVED'];
@@ -13,6 +14,7 @@ export class ContentService {
     private prisma: PrismaService,
     private gemini: GeminiService,
     private prompts: PromptBuilderService,
+    private qualityCheck: QualityCheckService,
   ) {}
 
   async createDraft(userId: string, dto: CreateContentDto) {
@@ -210,6 +212,14 @@ export class ContentService {
         data: { timesUsed: { increment: 1 } },
       }),
     ]);
+
+    // Auto-trigger quality check (Module 5)
+    try {
+      await this.qualityCheck.checkContentQuality(contentId, userId);
+    } catch (error) {
+      // Log error but don't fail the content generation
+      console.error('Quality check failed:', error);
+    }
 
     return this.getDraftOrThrow(contentId, userId);
   }

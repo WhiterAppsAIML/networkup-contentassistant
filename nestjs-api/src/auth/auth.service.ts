@@ -1,9 +1,9 @@
-import { Injectable, UnauthorizedException, ConflictException } from '@nestjs/common';
+import { Injectable, UnauthorizedException, BadRequestException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
-import * as bcrypt from 'bcryptjs';
 import { PrismaService } from '../prisma/prisma.service';
-import { RegisterDto, LoginDto } from './dto/auth.dto';
+import { UserTier } from '../common/decorators/require-tier.decorator';
+import { verifyFirebaseToken, mapFirebaseTierToBackend } from './firebase-admin';
 
 @Injectable()
 export class AuthService {
@@ -13,63 +13,52 @@ export class AuthService {
     private configService: ConfigService,
   ) {}
 
-  async register(dto: RegisterDto) {
-    const existing = await this.prisma.user.findUnique({ where: { email: dto.email } });
-    if (existing) {
-      throw new ConflictException('Email already registered');
+  async verifyFirebaseToken(idToken: string) {
+    if (!idToken) {
+      throw new BadRequestException('idToken required');
     }
 
-    const passwordHash = await bcrypt.hash(dto.password, 12);
+    const decoded = await verifyFirebaseToken(idToken);
+    const firebaseUid = decoded.uid;
+    const email = decoded.email;
 
-    const user = await this.prisma.user.create({
-      data: { email: dto.email, passwordHash },
-      select: { id: true, email: true, tier: true, createdAt: true },
+    if (!email) {
+      throw new UnauthorizedException('Email not found in Firebase token');
+    }
+
+    const firebaseTier = decoded.tier;
+    const backendTier = mapFirebaseTierToBackend(firebaseTier);
+
+    const user = await this.prisma.user.upsert({
+      where: { firebaseUid },
+      create: {
+        firebaseUid,
+        email,
+        tier: backendTier,
+      },
+      update: {
+        email,
+        tier: backendTier,
+      },
+      select: { id: true, email: true, tier: true, createdAt: true, firebaseUid: true },
     });
 
-    const tokens = await this.generateTokens(user.id);
+    const accessToken = this.generateAccessToken(user.firebaseUid, user.tier as UserTier);
 
-    return { user, ...tokens };
+    return { accessToken, user };
   }
 
-  async login(dto: LoginDto) {
-    const user = await this.prisma.user.findUnique({ where: { email: dto.email } });
-    if (!user) {
-      throw new UnauthorizedException('Invalid credentials');
-    }
-
-    const valid = await bcrypt.compare(dto.password, user.passwordHash);
-    if (!valid) {
-      throw new UnauthorizedException('Invalid credentials');
-    }
-
-    const tokens = await this.generateTokens(user.id);
-
-    return {
-      user: { id: user.id, email: user.email, tier: user.tier, createdAt: user.createdAt },
-      ...tokens,
-    };
+  private generateAccessToken(firebaseUid: string, tier: UserTier): string {
+    return this.jwtService.sign(
+      { sub: firebaseUid, tier },
+      { expiresIn: '15m', secret: this.configService.get('JWT_SECRET') }
+    );
   }
 
-  async refreshToken(userId: string) {
-    const user = await this.prisma.user.findUnique({ where: { id: userId } });
-    if (!user) {
-      throw new UnauthorizedException('User not found');
-    }
-    return this.generateTokens(user.id);
-  }
-
-  private async generateTokens(userId: string) {
-    const payload = { sub: userId };
-    const accessToken = this.jwtService.sign(payload);
-    const refreshToken = this.jwtService.sign(payload, { expiresIn: '30d' });
-
-    return { accessToken, refreshToken };
-  }
-
-  async validateUser(userId: string) {
+  async validateUser(firebaseUid: string) {
     const user = await this.prisma.user.findUnique({
-      where: { id: userId },
-      select: { id: true, email: true, tier: true },
+      where: { id: firebaseUid },
+      select: { id: true, email: true, tier: true, firebaseUid: true },
     });
     return user;
   }

@@ -15,6 +15,14 @@ export interface QualityCheckPromptInput {
   tone: string;
 }
 
+export const TIER_QUALITY_THRESHOLDS = {
+  STARTER: 6,
+  GROWTH: 7,
+  ENTERPRISE: 8,
+} as const;
+
+export type UserTier = keyof typeof TIER_QUALITY_THRESHOLDS;
+
 const QUALITY_DIMENSIONS = [
   'hookStrength',
   'specificity',
@@ -169,8 +177,9 @@ Do not calculate or return an overall score. The application will calculate the 
 
   getWeakDimensions(
     scores: Record<string, { score: number; issue: string }>,
-    threshold = 6,
+    tier: UserTier = 'STARTER',
   ): string[] {
+    const threshold = TIER_QUALITY_THRESHOLDS[tier];
     return QUALITY_DIMENSIONS.filter((dimension) => scores[dimension].score < threshold);
   }
 

@@ -1,12 +1,10 @@
 import { Controller, Get, Patch, Body, UseGuards, Param } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { UserService } from './user.service';
 
 @ApiTags('User')
 @Controller('user')
-@UseGuards(JwtAuthGuard)
 @ApiBearerAuth()
 export class UserController {
   constructor(private userService: UserService) {}
@@ -25,7 +23,7 @@ export class UserController {
 
   @Patch('upgrade')
   @ApiOperation({ summary: 'Upgrade user tier' })
-  async upgrade(@CurrentUser('id') userId: string, @Body('tier') tier: 'PRO' | 'ENTERPRISE') {
+  async upgrade(@CurrentUser('id') userId: string, @Body('tier') tier: 'GROWTH' | 'ENTERPRISE') {
     return this.userService.upgradeTier(userId, tier);
   }
 }

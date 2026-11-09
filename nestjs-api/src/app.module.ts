@@ -16,9 +16,12 @@ import { FrameworkModule } from './framework/framework.module';
 import { CtaModule } from './cta/cta.module';
 import { RagModule } from './rag/rag.module';
 import { QualityCheckModule } from './quality-check/quality-check.module';
+import { RedisModule } from './redis/redis.module';
+import { HealthModule } from './health/health.module';
+import { LoggerModule } from './logger/logger.module';
 
 import { TierRateLimitGuard } from './common/guards/tier-rate-limit.guard';
-import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
+import { FirebaseAuthGuard } from './auth/guards/firebase-auth.guard';
 
 @Module({
   imports: [
@@ -48,6 +51,9 @@ import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
     CtaModule,
     RagModule,
     QualityCheckModule,
+    RedisModule,
+    HealthModule,
+    LoggerModule,
   ],
   providers: [
     {
@@ -56,7 +62,7 @@ import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
     },
     {
       provide: APP_GUARD,
-      useClass: JwtAuthGuard,
+      useClass: FirebaseAuthGuard,
     },
     {
       provide: APP_GUARD,
